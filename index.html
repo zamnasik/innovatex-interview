@@ -126,7 +126,7 @@
 
 <script>
   // === CONFIG: paste your Web App /exec URL here ===
-  const API_URL = 'https://script.google.com/macros/s/AKfycbyzLPLYgPGTYqIomJiTeY-3MUIO-FRomJfT4ehH-oMZelpPGMuk0DdLuKXbCCQ2BUNz/exec';
+  const API_URL = 'https://script.google.com/macros/s/AKfycbxJkdMUrjvVxRwOjF5TX0azgvKnC4CTkWk9OSePcqQUf8xvA8MGPZWiIcuHzT-wj0Jk/exec';
 
   const ids = ['motivation10','knowledge5','problem5','teamwork3','commitment2'];
   const totalEl = document.getElementById('total');
@@ -183,28 +183,24 @@
     };
 
     try {
-      const res = await fetch(API_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-      const text = await res.text();
-      let json = {};
-      try { json = JSON.parse(text); } catch(e){}
+  // IMPORTANT: use no-cors and DO NOT set Content-Type header (avoids preflight)
+  await fetch(API_URL, {
+    method: 'POST',
+    mode: 'no-cors',
+    body: JSON.stringify(payload)   // Apps Script reads this as e.postData.contents
+  });
 
-      if (res.ok && json.ok) {
-        msgEl.style.display = 'block';
-        document.getElementById('form').reset();
-        computeTotal();
-        setTimeout(()=>{ msgEl.style.display='none'; }, 1500);
-      } else {
-        errEl.textContent = json.error ? `Server error: ${json.error}` : `Unexpected response: ${text}`;
-        errEl.style.display = 'block';
-      }
-    } catch (e2) {
-      errEl.textContent = 'Network error — please check internet or try again.';
-      errEl.style.display = 'block';
-    }
+  // If fetch didn't throw, we optimistically assume success.
+  msgEl.style.display = 'block';
+  document.getElementById('form').reset();
+  computeTotal();
+  setTimeout(()=>{ msgEl.style.display='none'; }, 1500);
+
+} catch (e2) {
+  errEl.textContent = 'Network error — please check internet or try again.';
+  errEl.style.display = 'block';
+}
+
   });
 
   // Prefill panel via URL ?panel=P1
